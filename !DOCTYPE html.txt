@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Profit/Loss Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f9f9f9;
+        }
+        .container {
+            display: flex;
+            max-width: 900px;
+            width: 100%;
+            background: #fff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .left {
+            padding: 20px;
+            width: 50%;
+        }
+        .right {
+            background: #f1f1f1;
+            width: 50%;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .right .title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .result {
+            margin-bottom: 15px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .result span {
+            font-weight: normal;
+            display: block;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Left Side: Input Form -->
+        <div class="left">
+            <form id="crypto-form">
+                <div class="form-group">
+                    <label for="currency">Choose Currency:</label>
+                    <select id="currency">
+                        <option value="USD" selected>USD</option>
+                        <option value="EUR">EUR</option>
+                        <option value="GBP">GBP</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="investment">Investment:</label>
+                    <input type="number" id="investment" placeholder="Enter your investment amount">
+                </div>
+                <div class="form-group">
+                    <label for="buy-price">Buy Price (per coin):</label>
+                    <input type="number" id="buy-price" placeholder="Enter buy price">
+                </div>
+                <div class="form-group">
+                    <label for="sell-price">Sell Price (per coin):</label>
+                    <input type="number" id="sell-price" placeholder="Enter sell price">
+                </div>
+                <div class="form-group">
+                    <label for="investment-fee">Investment Fee (%):</label>
+                    <input type="number" id="investment-fee" placeholder="Enter investment fee" value="0">
+                </div>
+                <div class="form-group">
+                    <label for="exit-fee">Exit Fee (%):</label>
+                    <input type="number" id="exit-fee" placeholder="Enter exit fee" value="0">
+                </div>
+            </form>
+        </div>
+        <!-- Right Side: Results -->
+        <div class="right">
+            <div class="title">Outcome Investments</div>
+            <div class="result">
+                Profit/Loss:
+                <span id="profit-loss">-</span>
+            </div>
+            <div class="result">
+                Profit/Loss (%):
+                <span id="profit-loss-percent">-</span>
+            </div>
+            <div class="result">
+                Total Investment:
+                <span id="total-investment">-</span>
+            </div>
+            <div class="result">
+                Total Take Home:
+                <span id="total-take-home">-</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const currencySelector = document.getElementById("currency");
+        const investmentInput = document.getElementById("investment");
+        const buyPriceInput = document.getElementById("buy-price");
+        const sellPriceInput = document.getElementById("sell-price");
+        const investmentFeeInput = document.getElementById("investment-fee");
+        const exitFeeInput = document.getElementById("exit-fee");
+
+        const profitLossOutput = document.getElementById("profit-loss");
+        const profitLossPercentOutput = document.getElementById("profit-loss-percent");
+        const totalInvestmentOutput = document.getElementById("total-investment");
+        const totalTakeHomeOutput = document.getElementById("total-take-home");
+
+        function calculateResults() {
+            // Fetch values
+            const currency = currencySelector.value;
+            const investment = parseFloat(investmentInput.value) || 0;
+            const buyPrice = parseFloat(buyPriceInput.value) || 0;
+            const sellPrice = parseFloat(sellPriceInput.value) || 0;
+            const investmentFee = parseFloat(investmentFeeInput.value) || 0;
+            const exitFee = parseFloat(exitFeeInput.value) || 0;
+
+            if (investment > 0 && buyPrice > 0 && sellPrice > 0) {
+                // Calculate total coins bought
+                const coins = investment / buyPrice;
+
+                // Calculate gross sale
+                const grossSale = coins * sellPrice;
+
+                // Calculate fees
+                const totalInvestmentFee = (investmentFee / 100) * investment;
+                const totalExitFee = (exitFee / 100) * grossSale;
+
+                // Total investment and take home
+                const totalInvestment = investment + totalInvestmentFee;
+                const totalTakeHome = grossSale - totalExitFee;
+
+                // Profit/Loss
+                const profitLoss = totalTakeHome - totalInvestment;
+                const profitLossPercent = (profitLoss / totalInvestment) * 100;
+
+                // Update results
+                profitLossOutput.textContent = `${profitLoss.toFixed(2)} ${currency}`;
+                profitLossPercentOutput.textContent = `${profitLossPercent.toFixed(2)}%`;
+                totalInvestmentOutput.textContent = `${totalInvestment.toFixed(2)} ${currency}`;
+                totalTakeHomeOutput.textContent = `${totalTakeHome.toFixed(2)} ${currency}`;
+            } else {
+                // Clear results if invalid input
+                profitLossOutput.textContent = "-";
+                profitLossPercentOutput.textContent = "-";
+                totalInvestmentOutput.textContent = "-";
+                totalTakeHomeOutput.textContent = "-";
+            }
+        }
+
+        // Add event listeners to inputs
+        document.querySelectorAll("input, select").forEach(input => {
+            input.addEventListener("input", calculateResults);
+        });
+    </script>
+</body>
+</html>
